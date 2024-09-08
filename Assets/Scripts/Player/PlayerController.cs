@@ -6,9 +6,20 @@ public class PlayerController : MonoBehaviour
     string currentScheme;
     Vector2 movementPosition;
     Vector3 newPosition;
+    SpriteRenderer spriteRenderer;
 
-    [SerializeField]Camera mainCamera;
+    float clampedX;
+    const float borderPosition = 2.8f;
+
+    [SerializeField] Camera mainCamera;
     [SerializeField] float playerSpeed;
+
+
+
+    private void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
 
     void OnMove (InputValue inputValue)
     {
@@ -21,8 +32,11 @@ public class PlayerController : MonoBehaviour
         switch (currentScheme)
         {
             case "Keyboard":
-                transform.Translate(Vector3.right * movementPosition[0] * Time.deltaTime * playerSpeed);
+
+                clampedX = Mathf.Clamp(transform.position.x + movementPosition[0] * Time.deltaTime * playerSpeed, -borderPosition + (spriteRenderer.size.x / 2), borderPosition - (spriteRenderer.size.x / 2));
+                transform.position = new Vector3(clampedX, transform.position.y, transform.position.z);
                 break;
+
             case "Touch":
 
                 newPosition = mainCamera.ScreenToWorldPoint(movementPosition);
@@ -30,7 +44,8 @@ public class PlayerController : MonoBehaviour
                 newPosition.y = transform.position.y;
                 newPosition.z = transform.position.z;
 
-                transform.position = Vector3.MoveTowards(transform.position, newPosition, Time.deltaTime * playerSpeed);
+                clampedX = Mathf.Clamp(newPosition.x, -borderPosition + (spriteRenderer.size.x/2), borderPosition - (spriteRenderer.size.x/2));
+                transform.position = Vector3.MoveTowards(transform.position, new Vector2(clampedX,newPosition.y), Time.deltaTime * playerSpeed);
 
                 break;
             default:
